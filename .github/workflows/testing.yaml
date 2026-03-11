@@ -1,0 +1,52 @@
+name: openet-otter-testing
+
+on:
+  push:
+    branches:
+      - main
+  
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-runner:
+    name: OTTER Test Runner
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Python Setup
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install GDAL
+      uses: trundev/setup-gdal@main
+      id: gdal
+      with:
+        # gdal-version: '3.10.1'
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        use-conda: false
+        rebuild-cache: true
+
+    - name: Monitor GDAL installation
+      run: |
+        echo "GDAL location is:"
+        echo "${{ steps.gdal.outputs.wheel-path }}"
+    
+    - name: Install UV (hassle-free pip and package management)
+      uses: astral-sh/setup-uv@v6.1.0
+      with:
+        activate-environment: true
+    - run: uv add pip
+
+    - name: Install OTTER Dependencies
+      run: |
+        uv sync --inexact
+        uv add "${{ steps.gdal.outputs.wheel-path }}"
+
+    - name: Run Pytest with Coverage
+      run: |
+        uv run pytest

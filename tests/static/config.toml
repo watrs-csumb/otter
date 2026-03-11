@@ -1,0 +1,11 @@
+[globals]
+data_dir = "./"
+
+[wil]
+crop_map_dir = "cropdir"
+et_dir = "et"
+mukey_fn = "mukey.tif"
+start_date="2016-11-08"
+end_date="2016-12-31"
+dt_format="%Y-%m-%d"
+min_et_pix_frac = 0.0

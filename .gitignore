@@ -1,2 +1,5 @@
 dist/*
 *.swp
+__pycache__/
+.venv/
+.pytest_cache/
