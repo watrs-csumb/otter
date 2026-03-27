@@ -131,7 +131,7 @@ def run_df(df, nodata=-9999, init_dru_frac=1., init_drl_frac=1., mad_frac=1.):
         raise Exception(f"input DataFrame missing required column(s) {missing}")
 
     def n(attr):
-        return df[attr].to_numpy()
+        return df[attr].to_numpy(dtype="float32")
 
     dru, drl, perc, dperc, ro, etaw, peff, et\
         = do_wb_interp(n("aws_max")[0], n("aws_u"), n("cn"), n("pr"),
