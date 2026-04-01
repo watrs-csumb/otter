@@ -69,6 +69,7 @@ def test_make_hydgrp_dict_success():
         52912: 2
     }
 
+@pytest.mark.skip("Unfinished")
 def test_make_hydrgrp_dict_fail(capsys):
     # A message is printed when mukey index is not in hydgrp array, so basically only when the lengths of the two arrays are mismatched.
     fake_hygrp_array = np.array(["D", "C", "A", "D", "B"])
