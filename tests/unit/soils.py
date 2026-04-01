@@ -69,25 +69,6 @@ def test_make_hydgrp_dict_success():
         52912: 2
     }
 
-@pytest.mark.skip("Unfinished")
-def test_make_hydrgrp_dict_fail(capsys):
-    # A message is printed when mukey index is not in hydgrp array, so basically only when the lengths of the two arrays are mismatched.
-    fake_hygrp_array = np.array(["D", "C", "A", "D", "B"])
-    fake_mukey_array = np.array([49316, 49415, 50432, 51298, 52912, 53374])
-
-    hydgrp_dict = soils.make_hydgrp_dict(fake_mukey_array, fake_hygrp_array)
-
-    captured = capsys.readouterr()
-    assert captured.out == "Row 5 not in ABC or empty in make_hygrp_dict"
-    
-    assert hydgrp_dict == {
-        49316: 4,
-        49415: 3,
-        50432: 1, 
-        51298: 4, 
-        52912: 2
-    }
-
 
 @pytest.mark.skip("Not implemented")
 # 3) pt_soil_func (use for api)
