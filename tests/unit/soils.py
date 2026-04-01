@@ -12,19 +12,54 @@ from osgeo import gdal
 from pytest import fixture, raises
 
 from otter import soils, static
-
-@fixture(scope="module")
-def static_files():
-    static_set = {}
-
-    static_path = resources.files(static)
-    with resources.as_file(static_path / "cdl_rz_cn.csv") as f:
-        static_set["cdl_rz_cn"] = pd.read_csv(f)
-    with resources.as_file(static_path / "gnatsgo.csv") as f:
-        static_set["gnatsgo"] = pd.read_csv(f)
-    with resources.as_file(static_path / "cn_table.csv") as f:
-        static_set["cn_table"] = pd.read_csv(f)
-
-    yield static_set
+import pytest
     
+# tests to-do
+# 1) mukey not having data in gnatsgo file (no corresponding hydrogp) (calc_cn, calc_aws)
+# valid mukey: 49315
+# invalid mukey: 0
 
+def test_calc_cn_success():
+    # Code logic results in a successful passthrough returning a non-zero integer.
+    crop_dict = soils.get_crop_cat_dict()
+    hydgrp_dict = soils.get_hydgrp_dict()
+    cn_dict = soils.get_cn_dict()
+
+    cn = soils.calc_cn(cdl_code=1, mukey=49315, crop_cat_dict=crop_dict, hydgrp_dict=hydgrp_dict, cn_dict=cn_dict)
+
+    assert cn > 0
+
+def test_calc_cn_fail_namukey():
+    crop_dict = soils.get_crop_cat_dict()
+    hydgrp_dict = soils.get_hydgrp_dict()
+    cn_dict = soils.get_cn_dict()
+
+    cn = soils.calc_cn(cdl_code=1, mukey=0, crop_cat_dict=crop_dict, hydgrp_dict=hydgrp_dict, cn_dict=cn_dict)
+
+    assert cn == 0
+
+def test_calc_aws_success():
+    rz_dict = soils.get_rz_dict()
+    aws_dict = soils.get_aws_dict()
+
+    aws = soils.calc_aws(cdl_code=1, mukey=49315, rz_dict=rz_dict, aws_dict=aws_dict)
+
+    assert aws > 0
+
+@pytest.mark.skip("Not implemented")
+def test_calc_aws_fail():
+    pass
+
+# 2) test for mukey not being in hydrgp table
+@pytest.mark.skip("Not implemented")
+def test_make_hydgrp_dict_success():
+    pass
+
+@pytest.mark.skip("Not implemented")
+def test_make_hydrgrp_dict_fail():
+    pass
+
+@pytest.mark.skip("Not implemented")
+# 3) pt_soil_func (use for api)
+def test_pt_soil_func():
+    pass
