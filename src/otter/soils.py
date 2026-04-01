@@ -78,7 +78,7 @@ def calc_aws(cdl_code, mukey, rz_dict, aws_dict):
 
 
 @njit
-def make_hydgrp_dict(mukey, hydgrp):
+def make_hydgrp_dict(mukey: np.ndarray, hydgrp: np.ndarray):
     d = dict()
     for i in range(mukey.size):
         if hydgrp[i] == "":
