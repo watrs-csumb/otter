@@ -43,12 +43,6 @@ def datasets(cleandir):
     datasets = {}
 
     try:
-        datasets["mukey_path"] = cwd / "tests/static/mukey.tif"
-        datasets["mukey_ras"] = gdal.Open(datasets["mukey_path"])
-
-        datasets["area_path"] = cwd / "tests/static/test_area_wil.tif"
-        datasets["area_cdl_ras"] = gdal.Open(datasets["area_path"])
-
         area_ts_dir = cwd / "tests/static/wil"
         area_ts_fns = area_ts_dir.glob("pt_*.csv")
         datasets["area_ts_dfs"] =\
