@@ -29,7 +29,7 @@ def test_calc_cn_success():
 
     assert cn > 0
 
-def test_calc_cn_fail_namukey():
+def test_calc_cn_fail_nullmukey():
     crop_dict = soils.get_crop_cat_dict()
     hydgrp_dict = soils.get_hydgrp_dict()
     cn_dict = soils.get_cn_dict()
@@ -46,9 +46,13 @@ def test_calc_aws_success():
 
     assert aws > 0
 
-@pytest.mark.skip("Not implemented")
-def test_calc_aws_fail():
-    pass
+def test_calc_aws_fail_nullmukey():
+    rz_dict = soils.get_rz_dict()
+    aws_dict = soils.get_aws_dict()
+
+    aws = soils.calc_aws(cdl_code=1, mukey=0, rz_dict=rz_dict, aws_dict=aws_dict)
+
+    assert aws == 0
 
 # 2) test for mukey not being in hydrgp table
 @pytest.mark.skip("Not implemented")
