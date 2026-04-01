@@ -14,8 +14,6 @@ from pytest import fixture, raises
 from otter import soils, static
 import pytest
     
-# tests to-do
-# 1) mukey not having data in gnatsgo file (no corresponding hydrogp) (calc_cn, calc_aws)
 # valid mukey: 49315
 # invalid mukey: 0
 
@@ -54,7 +52,6 @@ def test_calc_aws_fail_nullmukey():
 
     assert aws == 0
 
-# 2) test for mukey not being in hydrgp table
 def test_make_hydgrp_dict_success():
     fake_hygrp_array = np.array(["D", "C", "A", "D", "B"])
     fake_mukey_array = np.array([49316, 49415, 50432, 51298, 52912])
@@ -69,8 +66,22 @@ def test_make_hydgrp_dict_success():
         52912: 2
     }
 
+@pytest.mark.parametrize("cdl", [1, 2, 4])
+@pytest.mark.parametrize("mukey", [49315, 51096, 51693])
+@pytest.mark.parametrize("make_max", [False, True])
+def test_pt_soil_func(cdl, mukey, make_max):
+    pt_soil = soils.pt_soil_func()
 
-@pytest.mark.skip("Not implemented")
-# 3) pt_soil_func (use for api)
-def test_pt_soil_func():
-    pass
+    # make_max=False returns (aws, cn)
+    if not make_max:
+        aws, cn = pt_soil(cdl_code=cdl, mukey=mukey) # type: ignore
+
+        assert aws > 0 and cn > 0 and cn <= 100
+    
+    # make_max=True returns (aws, aws_max, cn)
+    else:
+        aws, aws_max, cn = pt_soil(cdl_code=cdl, mukey=mukey, make_max=make_max) # type: ignore
+
+        assert cn is not None   # <-- handled make_max correctly
+        assert aws > 0 and aws < aws_max and cn > 0 and cn <= 100
+
