@@ -81,9 +81,7 @@ def calc_aws(cdl_code, mukey, rz_dict, aws_dict):
 def make_hydgrp_dict(mukey: np.ndarray, hydgrp: np.ndarray):
     d = dict()
     for i in range(mukey.size):
-        if hydgrp[i] == "":
-            d[mukey[i]] = 0
-        elif hydgrp[i] == "A":
+        if hydgrp[i] == "A":
             d[mukey[i]] = 1
         elif hydgrp[i] == "B":
             d[mukey[i]] = 2
@@ -92,6 +90,8 @@ def make_hydgrp_dict(mukey: np.ndarray, hydgrp: np.ndarray):
         # elif np.string_.find(hydgrp[i], "D") != -1:
         elif "D" in hydgrp[i]:
             d[mukey[i]] = 4
+        elif hydgrp[i] == "":
+            d[mukey[i]] = 0
         else:
             print(f"Row {i} not in ABC or empty in make_hygrp_dict")
 
