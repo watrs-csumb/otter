@@ -22,20 +22,6 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install GDAL
-      uses: trundev/setup-gdal@main
-      id: gdal
-      with:
-        # gdal-version: '3.10.1'
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        use-conda: false
-        rebuild-cache: true
-
-    - name: Monitor GDAL installation
-      run: |
-        echo "GDAL location is:"
-        echo "${{ steps.gdal.outputs.wheel-path }}"
-    
     - name: Install UV (hassle-free pip and package management)
       uses: astral-sh/setup-uv@v6.1.0
       with:
@@ -45,7 +31,6 @@ jobs:
     - name: Install OTTER Dependencies
       run: |
         uv sync --inexact
-        uv add "${{ steps.gdal.outputs.wheel-path }}"
 
     - name: Run Pytest with Coverage
       run: |

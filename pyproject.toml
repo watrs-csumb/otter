@@ -48,11 +48,6 @@ dependencies = [
     "urllib3>=2.3.0",
 ]
 
-[project.optional-dependencies]
-gdal = [
-    "setuptools>=80.9.0",
-]
-
 [dependency-groups]
 dev = [
     "otter",

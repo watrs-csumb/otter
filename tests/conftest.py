@@ -13,7 +13,6 @@ import sys
 
 from collections.abc import Generator
 from os import chdir, getcwd
-from osgeo import gdal
 from pandas import read_csv
 from pathlib import Path 
 from pytest import fixture
