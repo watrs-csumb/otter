@@ -48,9 +48,13 @@ def do_wb_interp(aws_max: float, aws_u_ts: np.ndarray,
                  cn_ts: np.ndarray, pr_ts: np.ndarray,
                  et_ts: np.ndarray, eto_ts: np.ndarray,
                  nodata=-9999., init_dru_frac=1.,
-                 init_drl_frac=1., mad_frac=1.):
+                 init_drl_frac=1., mad_frac=1.,
+                 crop_switch_rule="uniform"):
     if init_dru_frac > mad_frac:
         raise Exception("init_dru_frac is larger than mad_frac (starting more depleted than allowed)")
+
+    if crop_switch_rule != "uniform" and crop_switch_rule != "boundary_transfer":
+        raise Exception("crop_switch_rule must be 'uniform' or 'boundary_transfer'")
 
     num_steps = et_ts.size
 
@@ -81,9 +85,45 @@ def do_wb_interp(aws_max: float, aws_u_ts: np.ndarray,
         et = et_ts[i]
 
         if aws_u_ts[i] != last_aws_u:
-            total_dep = last_dru + last_drl
-            last_dru = total_dep * aws_u_ts[i] / aws_max
-            last_drl = total_dep * (aws_max - aws_u_ts[i]) / aws_max
+            # Crop switch: the upper reservoir capacity changed with the new
+            # crop's max rooting depth. Re-split the carried-over depletion
+            # between the two reservoirs. The total column capacity (aws_max)
+            # and the total column water content are both conserved.
+            if crop_switch_rule == "uniform":
+                # paper Eqns 10-11: distribute total depletion in proportion to
+                # the new capacities, i.e. reset the column to mean water content.
+                total_dep = last_dru + last_drl
+                last_dru = total_dep * aws_u_ts[i] / aws_max
+                last_drl = total_dep * (aws_max - aws_u_ts[i]) / aws_max
+            else:
+                # boundary_transfer: move only the depth band that changes
+                # ownership. Its exact capacity is d_aws_u = aws_u_ts[i] - old
+                # upper capacity, and it carries water at the source reservoir's
+                # fractional water content. Works in water content space,
+                # w = aws - dr, and recovers depletion at the end.
+                last_aws_l = aws_max - last_aws_u
+                new_aws_l = aws_max - aws_u_ts[i]
+                last_w_u = last_aws_u - last_dru
+                last_w_l = last_aws_l - last_drl
+                d_aws_u = aws_u_ts[i] - last_aws_u
+                if d_aws_u > 0:
+                    # upper expands into lower, at lower's water content
+                    # (guard last_aws_l == 0 is logically unreachable here)
+                    if last_aws_l == 0:
+                        new_w_u = last_w_u
+                    else:
+                        new_w_u = last_w_u + d_aws_u * last_w_l / last_aws_l
+                else:
+                    # upper contracts, ceding to lower at upper's water content
+                    # (guard last_aws_u == 0 is logically unreachable here)
+                    if last_aws_u == 0:
+                        new_w_u = last_w_u
+                    else:
+                        new_w_u = last_w_u + d_aws_u * last_w_u / last_aws_u
+                new_w_l = (last_w_u + last_w_l) - new_w_u
+                # defensive clamp. Already holds for 0 <= MRD <= 2.4 m
+                last_dru = min(max(aws_u_ts[i] - new_w_u, 0.0), aws_u_ts[i])
+                last_drl = min(max(new_aws_l - new_w_l, 0.0), new_aws_l)
             last_aws_u = aws_u_ts[i]
 
             # temporary small fudge
@@ -125,7 +165,8 @@ def do_wb_interp(aws_max: float, aws_u_ts: np.ndarray,
     return (dru_ts, drl_ts, perc_ts, dperc_ts, ro_ts, etaw_ts,
             peff_ts, et_ts)
 
-def run_df(df, nodata=-9999, init_dru_frac=1., init_drl_frac=1., mad_frac=1.):
+def run_df(df, nodata=-9999, init_dru_frac=1., init_drl_frac=1., mad_frac=1.,
+           crop_switch_rule="uniform"):
     missing = [x for x in ["pr", "et", "eto", "aws_u", "aws_max", "cn"] if x not in df.columns]
     if any(missing):
         raise Exception(f"input DataFrame missing required column(s) {missing}")
@@ -138,7 +179,8 @@ def run_df(df, nodata=-9999, init_dru_frac=1., init_drl_frac=1., mad_frac=1.):
                        n("et"), n("eto"),
                        init_dru_frac=init_dru_frac,
                        init_drl_frac=init_drl_frac,
-                       nodata=nodata, mad_frac=mad_frac)
+                       nodata=nodata, mad_frac=mad_frac,
+                       crop_switch_rule=crop_switch_rule)
 
     df["dru"] = dru
     df["drl"] = drl
